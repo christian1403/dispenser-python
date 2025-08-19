@@ -9,6 +9,8 @@ class DatabaseMongo:
     """Configuration for MongoDB connection"""
 
     MONGODB_URI = Config.DATABASE_URL
+    MONGODB_DATABASE = 'dispenser_python' # ngasal aku
+
 
     client = MongoClient(MONGODB_URI, server_api=ServerApi('1'))
 
