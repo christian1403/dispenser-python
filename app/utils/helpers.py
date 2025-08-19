@@ -18,45 +18,47 @@ def current_timestamp():
     return datetime.utcnow().isoformat() + 'Z'
 
 
+
 def success_response(data=None, message="Success", status_code=200):
     """
-    Create a standardized success response
-    
+    Create a standardized success response.
+
     Args:
-        data: Response data
-        message: Success message
-        status_code: HTTP status code
-        
+        data (any, optional): Response data. Defaults to None.
+        message (str, optional): Success message. Defaults to "Success".
+        status_code (int, optional): HTTP status code. Defaults to 200.
+
     Returns:
-        Flask response object
+        tuple: Flask response object (jsonify, status_code)
     """
     response = {
-        'success': True,
+        'status': 'success',
         'message': message,
+        'result': {
+            'data': data if data is not None else []
+        },
         'timestamp': current_timestamp()
     }
-    
-    if data is not None:
-        response['data'] = data
     
     return jsonify(response), status_code
 
 
 def error_response(message="An error occurred", status_code=400, error_code=None):
     """
-    Create a standardized error response
-    
+    Create a standardized error response.
+
     Args:
-        message: Error message
-        status_code: HTTP status code
-        error_code: Custom error code
-        
+        message (str, optional): Error message. Defaults to "An error occurred".
+        status_code (int, optional): HTTP status code. Defaults to 400.
+        error_code (str|int, optional): Custom error code. Defaults to None.
+
     Returns:
-        Flask response object
+        tuple: Flask response object (jsonify, status_code)
     """
     response = {
-        'success': False,
-        'error': message,
+        'status': 'error',
+        'message': message,
+        'result': {},
         'timestamp': current_timestamp()
     }
     
@@ -66,27 +68,37 @@ def error_response(message="An error occurred", status_code=400, error_code=None
     return jsonify(response), status_code
 
 
-def paginate_response(items, page, per_page, total):
+def paginate_response(data=None, page=1, per_page=10, total=0, message="Success", status_code=200):
     """
-    Create a paginated response
-    
+    Create a standardized paginated response.
+
     Args:
-        items: List of items for current page
-        page: Current page number
-        per_page: Items per page
-        total: Total number of items
-        
+        data (list|None, optional): List of items for current page. Defaults to [] if None.
+        page (int, optional): Current page number. Defaults to 1.
+        per_page (int, optional): Number of items per page. Defaults to 10.
+        total (int, optional): Total number of items. Defaults to 0.
+        message (str, optional): Response message. Defaults to "Success".
+        status_code (int, optional): HTTP status code. Defaults to 200.
+
     Returns:
-        Dict with paginated data
+        tuple: Flask response object (jsonify, status_code)
     """
-    return {
-        'items': items,
-        'pagination': {
-            'page': page,
-            'per_page': per_page,
-            'total': total,
-            'pages': (total + per_page - 1) // per_page,
-            'has_next': page * per_page < total,
-            'has_prev': page > 1
-        }
+    response = {
+        'status': 'success',
+        'message': message,
+        'result': {
+            'data': data if data is not None else [],  # fallback ke list kosong
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total': total,
+                'pages': (total + per_page - 1) // per_page if per_page > 0 else 0,
+                'has_next': page * per_page < total,
+                'has_prev': page > 1
+            }
+        },
+        'timestamp': current_timestamp()
     }
+    
+    return jsonify(response), status_code
+
