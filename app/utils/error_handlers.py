@@ -1,5 +1,5 @@
 from marshmallow import ValidationError
-from utils.helpers import error_response
+from .helpers import error_response
 
 
 def error_handlers(app):
