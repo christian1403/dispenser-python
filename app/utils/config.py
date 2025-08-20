@@ -34,7 +34,8 @@ class Config:
     
     # Database Configuration (if needed)
     DATABASE_URL = os.environ.get('MONGODB_URI')
-    
+    DATABASE_NAME = os.environ.get('MONGODB_DATABASE', 'dispenser_db')
+
     @staticmethod
     def validate_config():
         """Validate required configuration"""
