@@ -11,6 +11,7 @@ from flask_limiter.util import get_remote_address
 from app.api.routes import api_bp
 from app.utils.config import Config
 from app.utils.error_handlers import error_handlers
+from app.utils.extension import socketio
 
 
 def create_app(config_class=Config):
@@ -44,6 +45,12 @@ def create_app(config_class=Config):
     
     # Register error handlers
     error_handlers(app)
+    
+    # Setup flask socket
+    socketio.init_app(app)
+    
+    from app.event import sensor_event
+    
     
     # Health check endpoint
     @app.route('/health')

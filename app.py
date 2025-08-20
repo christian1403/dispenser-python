@@ -5,6 +5,7 @@ Flask API Application Entry Point
 import os
 from dotenv import load_dotenv
 from app import create_app
+from app.utils.extension import socketio
 
 # Load environment variables
 load_dotenv()
@@ -17,4 +18,4 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
     debug = os.getenv("FLASK_DEBUG", "False").lower() == "true"
     
-    app.run(host=host, port=port, debug=debug)
+    socketio.run(app=app, host=host, port=port, debug=debug)
