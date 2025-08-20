@@ -9,10 +9,11 @@ class DatabaseMongo:
     """Configuration for MongoDB connection"""
 
     MONGODB_URI = Config.DATABASE_URL
-    MONGODB_DATABASE = 'dispenser_python' # ngasal aku
+    MONGODB_DATABASE = Config.DATABASE_NAME
 
 
     client = MongoClient(MONGODB_URI, server_api=ServerApi('1'))
+    db = client[MONGODB_DATABASE]
 
     @staticmethod
     def validate_config():
@@ -28,6 +29,7 @@ class DatabaseMongo:
     def ping():
         """Ping the MongoDB server to check connection"""
         try:
+            client
             DatabaseMongo.client.admin.command('ping')
             print("Pinged your deployment. You successfully connected to MongoDB!")
         except Exception as e:
