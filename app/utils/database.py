@@ -29,7 +29,6 @@ class DatabaseMongo:
     def ping():
         """Ping the MongoDB server to check connection"""
         try:
-            client
             DatabaseMongo.client.admin.command('ping')
             print("Pinged your deployment. You successfully connected to MongoDB!")
         except Exception as e:
