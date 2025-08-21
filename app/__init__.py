@@ -10,6 +10,7 @@ from flask_limiter.util import get_remote_address
 
 from app.api.routes import api_bp
 from app.api.device.device_routes import device_bp
+from app.api.device.sensor_routes import sensor_bp
 from app.utils.config import Config
 from app.utils.error_handlers import error_handlers
 
@@ -43,6 +44,7 @@ def create_app(config_class=Config):
     # Register blueprints
     app.register_blueprint(api_bp, url_prefix=f"/api/{app.config.get('API_VERSION', 'v1')}")
     app.register_blueprint(device_bp, url_prefix=f"/api/{app.config.get('API_VERSION', 'v1')}")
+    app.register_blueprint(sensor_bp, url_prefix=f"/api/{app.config.get('API_VERSION', 'v1')}")
     
     # Register error handlers
     error_handlers(app)

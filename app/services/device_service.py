@@ -47,7 +47,9 @@ class DeviceService:
             "device_id" : data.get("device_id"),
             "name" : data.get("name"),
             "sensors" : data.get("sensors"),
-            "metadata" : data.get("metadata"),
+            "metadata" : {
+                "installation_date" : current_timestamp()
+            },
             "tools" : data.get("tools")
         }
         
