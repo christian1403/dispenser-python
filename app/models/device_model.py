@@ -4,7 +4,7 @@ class DeviceModel(BaseModel):
     id: str
     device_id: str
     name: str
-    sensors: list
+    sensors: dict
     metadata: dict
     tools: list
 
