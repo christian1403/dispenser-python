@@ -49,6 +49,9 @@ def create_app(config_class=Config):
     # Register error handlers
     error_handlers(app)
     
+
+    
+    
     # Health check endpoint
     @app.route('/health')
     def health_check():
