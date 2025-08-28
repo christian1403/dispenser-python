@@ -27,3 +27,6 @@ if __name__ == "__main__":
         socketio.run(app,host=host, port=port, debug=debug)
     else:
         socketio.run(app=app,debug=debug)
+#         app.run(host=host, port=port, debug=debug)
+#     else:
+#         app.run(debug=debug)
