@@ -1,77 +1,105 @@
 from flask import request
-from flask_socketio import SocketIO, join_room, leave_room, disconnect
-
-from app.utils.helpers import success_response
+from flask_socketio import join_room, leave_room, disconnect
 from app.utils.extension import socketio
+from app.storage.redis_storage import (
+    save_device, remove_device, get_room_members,
+    find_device_by_sid, save_payload
+)
 
-# Simpan mapping device_id -> sid
-connected_devices = {}
+from flask import request
 
+# =============== AUTH HELPER =================
 
-def login(device_id, key, salt):
-    my_dummy_data = {
-        'key': 'dummykey1',
-        'salt':'dummysalt1'
-    }
+def login(device_id, client_type):
+    """
+    Validasi device_id dan tipe client.
+    """
+    if not device_id or client_type not in ("iot", "frontend"):
+        print(f"WARN: Unauthorized connection attempt: {request.sid}")  # type: ignore
+        return False
     
-    if key != my_dummy_data["key"] or salt != my_dummy_data["salt"] or not device_id:
-        print(f"Unauthorized connection attempt: {request.sid}") # type: ignore
-        return False  
-    else:
-        return True
+    # TODO: validasi device_id dari MongoDB
+    
+    return True
 
+####################################################
 
 @socketio.on("connect")
 def handle_connect(auth):
-    """
-    Saat client mencoba connect, auth diambil dari handshake.
-    Kalau tidak valid, return False => otomatis ditolak.
-    """
     device_id = auth.get("device_id") if auth else None
-    key = auth.get("key") if auth else None
-    salt = auth.get("salt") if auth else None
+    client_type = auth.get("client_type") if auth else None
 
-    if not login(device_id, key, salt):
-        return False # tolak koneksi
+    if not login(device_id, client_type):
+        return False
 
-    # Simpan mapping device -> sid
-    connected_devices[device_id] = request.sid # type: ignore
+    members = get_room_members(device_id)
 
-    # Join room sesuai device_id
+    if client_type == "iot":
+        existing_iots = [sid for sid, ctype in members.items() if ctype == "iot"]
+        if existing_iots:
+            for sid in list(members.keys()):
+                disconnect(sid)
+            remove_device(device_id, request.sid)
+            return False
+
+    if client_type == "frontend":
+        has_iot = any(ctype == "iot" for ctype in members.values())
+        if not has_iot:
+            disconnect(request.sid)
+            return False
+
+    save_device(device_id, request.sid, client_type)
     join_room(device_id)
 
-    print(f"Authorized client connected: {device_id} ({request.sid}) on Room (R_{device_id})") # type: ignore
     socketio.emit("message", {
-        "msg": f"Device {device_id} authenticated",
-        "room": f"R_{device_id}"
-    }, to=device_id)
+        "msg": f"{client_type.capitalize()} for {device_id} authenticated"
+    }, to=request.sid)
 
 
 @socketio.on("disconnect")
 def handle_disconnect():
-    """
-    Hapus sid dari mapping kalau putus.
-    """
-    sid = request.sid # type: ignore
-    device_id = None
+    sid = request.sid
+    device_id, client_type = find_device_by_sid(sid)
 
-    for d, s in list(connected_devices.items()):
-        if s == sid:
-            device_id = d
-            del connected_devices[d]
-            break
+    if not device_id:
+        return
 
-    print(f"Client disconnected: {sid} (device: {device_id})")
-    leave_room(sid)
+    if client_type == "iot":
+        members = get_room_members(device_id)
+        for member_sid in list(members.keys()):
+            disconnect(member_sid)
+        from app.storage.redis_storage import _load_all, _save_all
+        devices = _load_all()
+        if device_id in devices:
+            del devices[device_id]
+            _save_all(devices)
+    else:
+        remove_device(device_id, sid)
+        leave_room(device_id)
+
+
+@socketio.on("iot_data")
+def handle_iot_data(data):
+    device_id = data.get("device_id")
+    payload = data.get("payload")
+    members = get_room_members(device_id)
+    if not device_id or not members:
+        return
+
+    _, client_type = find_device_by_sid(request.sid)
+    if client_type != "iot":
+        return
+
+    # TODO: validasi payload sesuai dari model database
+    
+    if save_payload(device_id, payload, request.sid):
+        socketio.emit("iot_update", {"device_id": device_id, "payload": payload}, to=device_id)
 
 
 @socketio.on("message")
 def handle_message(data):
-    """
-    Hanya client yang sudah lewat connect (dan auth valid) bisa sampai sini.
-    """
-    print(f"Received from {request.sid}:", data) # type: ignore
+    device_id, client_type = find_device_by_sid(request.sid)
     socketio.emit("message", {
         "status": "ok",
-        "reply": f"Server received: {data}"
-    }, to=request.sid) # type: ignore
+        "reply": f"Server received from {client_type}: {data}"
+    }, to=request.sid)
