@@ -1,7 +1,17 @@
+import os
 import redis, json
 
 # koneksi redis
-redis_client = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+# redis_client = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+# Redis Cloud connection from environment variables
+redis_client = redis.Redis(
+    host=os.environ.get("REDIS_HOST", "redis-15828.c9.us-east-1-4.ec2.redns.redis-cloud.com"),
+    port=int(os.environ.get("REDIS_PORT", 15828)),
+    username=os.environ.get("REDIS_USERNAME", "default"),
+    password=os.environ.get("REDIS_PASSWORD", ""),  # Set this in your environment
+    decode_responses=True,
+    client_name=os.environ.get("REDIS_CLIENT_NAME", "database-MFDVSCZD")
+)
 REDIS_KEY = "connected_devices"
 
 
