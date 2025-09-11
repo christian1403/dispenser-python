@@ -7,6 +7,8 @@ from app.utils.auth import require_api_key, validate_json_payload
 from app.utils.helpers import success_response, error_response
 from app.services.example_service import ExampleService
 
+from app.utils.database import DatabaseMongo
+
 # Create API blueprint
 api_bp = Blueprint('api', __name__, url_prefix='/api/v1')
 
@@ -14,24 +16,24 @@ api_bp = Blueprint('api', __name__, url_prefix='/api/v1')
 @api_bp.route('/status', methods=['GET'])
 def api_status():
     print("API status requested")
-    
     """
     Get API status
     
     Returns:
         JSON response with API status information
     """
+
+    DatabaseMongo.ping()  # Check MongoDB connection
     return success_response({
-        'api_version': 'v1',
-        'status': 'running',
-        'endpoints': {
-            'status': 'GET /api/v1/status',
-            'example': 'GET /api/v1/example',
-            'example_post': 'POST /api/v1/example'
-        }
-    })
-
-
+            'api_version': 'v1',
+            'status': 'running',
+            'endpoints': {
+                'status': 'GET /api/v1/status',
+                'example': 'GET /api/v1/example',
+                'example_post': 'POST /api/v1/example'
+            }
+        })
+    
 @api_bp.route('/example', methods=['GET'])
 @require_api_key
 def get_example():

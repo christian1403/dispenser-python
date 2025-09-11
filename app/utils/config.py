@@ -33,8 +33,9 @@ class Config:
     CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '*')
     
     # Database Configuration (if needed)
-    DATABASE_URL = os.environ.get('DATABASE_URL')
-    
+    DATABASE_URL = os.environ.get('MONGODB_URI')
+    DATABASE_NAME = os.environ.get('MONGODB_DATABASE', 'dispenser_db')
+
     @staticmethod
     def validate_config():
         """Validate required configuration"""
