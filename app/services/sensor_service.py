@@ -55,20 +55,19 @@ class SensorService:
             raise ValueError("Device with this ID does not exist")
 
         existing_sensors = check.get("sensors", {})
-        raw_value = data.get("value")
+        raw_value = float(data.get("value"))
         sensor_type = data.get("sensor_type", "").lower()
         
         # Apply calibration based on sensor type
         calibrated_result = self._apply_calibration(sensor_type, raw_value)
         calibrated_value = calibrated_result.get('value', 0.0)
         calibrated_unit = calibrated_result.get('unit', data.get("unit", ""))
-        
         sensor = {
             "device_id": device_id,
             "timestamp": current_timestamp(),
             "sensor_type": sensor_type,
-            "value": calibrated_value,  # Use calibrated value
-            "raw_value": raw_value,     # Store original raw value
+            "value": float(calibrated_value),  # Use calibrated value
+            "raw_value": float(raw_value),     # Store original raw value
             "unit": calibrated_unit,    # Use calibrated unit
             # "calibration_data": calibrated_result,  # Store full calibration info
             # "status": 1,
@@ -76,8 +75,8 @@ class SensorService:
 
         updateSensor = {
             sensor_type: {
-                "value": calibrated_value,
-                "raw_value": raw_value,
+                "value": float(calibrated_value),
+                "raw_value": float(raw_value),
                 "unit": calibrated_unit,
                 "calibration_date": current_timestamp(),
                 "calibration_data": calibrated_result,
