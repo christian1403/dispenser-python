@@ -8,7 +8,7 @@ class SensorModel(BaseModel):
     unit: str
     value: float
     status: int
-
+    raw_value: float = None
     @staticmethod
     def from_mongo(doc):
         return SensorModel(
@@ -18,5 +18,6 @@ class SensorModel(BaseModel):
             sensor_type=doc.get("sensor_type"),
             unit=doc.get("unit"),
             value=doc.get("value"),
-            status=doc.get("status", 0)
+            status=doc.get("status", 0),
+            raw_value=doc.get("raw_value")
         )
