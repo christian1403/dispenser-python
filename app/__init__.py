@@ -32,7 +32,8 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     
     # Initialize CORS
-    CORS(app, origins=app.config.get('CORS_ORIGINS', '*'))
+    # CORS(app, origins=app.config.get('CORS_ORIGINS', '*'))
+    CORS(app)
     
     # Initialize rate limiter
     limiter = Limiter(
